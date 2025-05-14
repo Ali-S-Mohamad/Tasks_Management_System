@@ -16,66 +16,77 @@ class TaskPolicy
      * @param mixed $ability
      * @return bool
      */
-    public function before(User $user, $ability): bool|null 
+    public function before(User $user, $ability): bool|null
     {
-        return $user->isAdmin() ? true : null ;
+        return $user->isAdmin() ? true : null;
     }
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user)
     {
-        return auth()->user()->id === $user->id;
+        return auth()->user()->id === $user->id
+            ? Response::allow()
+            : Response::deny('You are not authorized to view these tasks.');
+        ;
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Task $task): bool
+    public function view(User $user, Task $task)
     {
-        return $task->user_id === $user->id;
+        return $task->user_id === $user->id
+            ? Response::allow()
+            : Response::deny('You are not allowed to view this task.');
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user)
     {
-        if (! Status::query()->exists()) {
-            return false;
+        if (!Status::query()->exists()) {
+            return Response::deny('Cannot create a task without any statuses available.');
         }
-        return auth()->user()->id === $user->id;
+        return auth()->user()->id === $user->id
+            ? Response::allow()
+            : Response::deny('You are not allowed to create tasks for other users.');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Task $task): bool
+    public function update(User $user, Task $task)
     {
-        return $task->user_id === $user->id;
+        return $task->user_id === $user->id
+            ? Response::allow()
+            : Response::deny('You are not allowed to update this task.');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Task $task): bool
+    public function delete(User $user, Task $task)
     {
-        return $task->user_id === $user->id;
+        return $task->user_id === $user->id
+            ? Response::allow()
+            : Response::deny('You are not allowed to delete this task.');
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Task $task): bool
+    public function restore(User $user, Task $task)
     {
-        return false;
+        return Response::deny('Restoring tasks is not allowed.');
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Task $task): bool
+    public function forceDelete(User $user, Task $task)
     {
-        return false;
+        return Response::deny('Permanently deleting tasks is not permitted.');
     }
 }
